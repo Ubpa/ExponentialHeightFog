@@ -43,7 +43,7 @@
 				// FogHeightFalloffSecond
 				// FogDensitySecond
 				// FogHeightSecond
-				float4 ExponentialFogParameters2;
+				//[second]float4 ExponentialFogParameters2;
 
 				// FogDensity in x
 				// FogHeight in y
@@ -98,7 +98,7 @@
 
 				// FogDensity * exp2(-FogHeightFalloff * (CameraWorldPosition.z - FogHeight))
 				float RayOriginTerms = ExponentialFogParameters.x;
-				float RayOriginTermsSecond = ExponentialFogParameters2.x;
+				//[second]float RayOriginTermsSecond = ExponentialFogParameters2.x;
 				float RayLength = CameraToReceiverLength;
 				float RayDirectionZ = CameraToReceiver.z;
 
@@ -131,13 +131,14 @@
 
 					// ExponentialFogParameters2.y : FogHeightFalloffSecond
 					// ExponentialFogParameters2.w : fog height second
-					float ExponentSecond = max(-127.0f, ExponentialFogParameters2.y * (ExclusionIntersectionZ - ExponentialFogParameters2.w));
-					RayOriginTermsSecond = ExponentialFogParameters2.z * exp2(-ExponentSecond);
+					//[second]float ExponentSecond = max(-127.0f, ExponentialFogParameters2.y * (ExclusionIntersectionZ - ExponentialFogParameters2.w));
+					//[second]RayOriginTermsSecond = ExponentialFogParameters2.z * exp2(-ExponentSecond);
 				}
 
 				// Calculate the "shared" line integral (this term is also used for the directional light inscattering) by adding the two line integrals together (from two different height falloffs and densities)
 				// ExponentialFogParameters.y : fog height falloff
-				float ExponentialHeightLineIntegralShared = CalculateLineIntegralShared(ExponentialFogParameters.y, RayDirectionZ, RayOriginTerms) + CalculateLineIntegralShared(ExponentialFogParameters2.y, RayDirectionZ, RayOriginTermsSecond);
+				float ExponentialHeightLineIntegralShared = CalculateLineIntegralShared(ExponentialFogParameters.y, RayDirectionZ, RayOriginTerms);
+					//[second]+ CalculateLineIntegralShared(ExponentialFogParameters2.y, RayDirectionZ, RayOriginTermsSecond);
 				// fog amount，最终的积分值
 				float ExponentialHeightLineIntegral = ExponentialHeightLineIntegralShared * RayLength;
 

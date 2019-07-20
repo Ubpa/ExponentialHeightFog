@@ -1,6 +1,8 @@
 #ifndef FOG_COMMON_CGINC
 #define FOG_COMMON_CGINC
 
+#include "UnityCG.cginc"
+
 #define UBPA_FOG_COORDS(ID) float4 fogCoord : TEXCOORD##ID;
 
 // WorldSpaceViewDir : vertex to camera
@@ -152,8 +154,4 @@ half4 GetExponentialHeightFog(float3 WorldPositionRelativeToCamera) // camera to
 	return half4(FogColor, ExpFogFactor);
 }
 
-fixed4 ApplyFog(fixed4 pixelColor, float4 fogColorAndAlpha) {
-	return fixed4(pixelColor.rgb * fogColorAndAlpha.a + fogColorAndAlpha.rgb, pixelColor.a);
-}
-
-#endif
+#endif// !FOG_COMMON_CGINC

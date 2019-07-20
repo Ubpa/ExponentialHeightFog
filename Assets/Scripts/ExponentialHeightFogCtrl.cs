@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class ExponentialHeightFogCtrl : MonoBehaviour
 {
-    public Material fog;
+    public Material fog = null;
 
     [Range(0.0f,0.05f)]
     public float fogDensity = 0.02f; // This is the global density factor, which can be thought of as the fog layer's thickness.
     [Range(0.001f,2.0f)]
     public float fogHeightFalloff = 0.2f; // Height density factor, controls how the density increases as height decreases. Smaller values make the transition larger.
-    public float fogHeight;
+    public float fogHeight = 0.0f;
 
     /*
     [Range(0.0f, 0.05f)]
@@ -29,11 +29,11 @@ public class ExponentialHeightFogCtrl : MonoBehaviour
     [Range(0.0f,20000000.0f)]
     public float fogCutoffDistance = 0.0f;
 
-    public Light dirLight;
+    public Light dirLight = null;
     [Range(2.0f,64.0f)]
     public float directionalInscatteringExponent = 4.0f; // Controls the size of the directional inscattering cone, which is used to approximate inscattering from a directional light source.
 
-    public float directionalInscatteringStartDistance = 10000.0f; // Controls the start distance from the viewer of the directional inscattering, which is used to approximate inscattering from a directional light.
+    public float directionalInscatteringStartDistance = 0.0f; // Controls the start distance from the viewer of the directional inscattering, which is used to approximate inscattering from a directional light.
     [ColorUsage(false)]
     public Color directionalInscatteringColor = new Color(0.25f, 0.25f, 0.125f); // Sets the color for directional inscattering, used to approximate inscattering from a directional light. This is similar to adjusting the simulated color of a directional light source.
 
@@ -41,6 +41,7 @@ public class ExponentialHeightFogCtrl : MonoBehaviour
     void Update()
     {
         const float USELESS_VALUE = 0.0f;
+
         var ExponentialFogParameters = new Vector4(RayOriginTerm(fogDensity, fogHeightFalloff, fogHeight), fogHeightFalloff, USELESS_VALUE, startDistance);
         //var ExponentialFogParameters1 = new Vector4(RayOriginTerm(fogDensity2, fogHeightFalloff2, fogHeight2), fogHeightFalloff2, USELESS_VALUE2, startDistance2);
         var ExponentialFogParameters2 = new Vector4(USELESS_VALUE, USELESS_VALUE, 0.0f, USELESS_VALUE);
@@ -64,13 +65,13 @@ public class ExponentialHeightFogCtrl : MonoBehaviour
             1.0f - fogMaxOpacity
         );
         
-        fog.SetVector("ExponentialFogParameters", ExponentialFogParameters);
-        //fog.SetVector("ExponentialFogParameters1", ExponentialFogParameters1);
-        fog.SetVector("ExponentialFogParameters2", ExponentialFogParameters2);
-        fog.SetVector("ExponentialFogParameters3", ExponentialFogParameters3);
-        fog.SetVector("DirectionalInscatteringColor", DirectionalInscatteringColor);
-        fog.SetVector("InscatteringLightDirection", InscatteringLightDirection);
-        fog.SetVector("ExponentialFogColorParameter", ExponentialFogColorParameter);
+        fog.SetVector(nameof(ExponentialFogParameters), ExponentialFogParameters);
+        //fog.SetVector(nameof(ExponentialFogParameters1), ExponentialFogParameters1);
+        fog.SetVector(nameof(ExponentialFogParameters2), ExponentialFogParameters2);
+        fog.SetVector(nameof(ExponentialFogParameters3), ExponentialFogParameters3);
+        fog.SetVector(nameof(DirectionalInscatteringColor), DirectionalInscatteringColor);
+        fog.SetVector(nameof(InscatteringLightDirection), InscatteringLightDirection);
+        fog.SetVector(nameof(ExponentialFogColorParameter), ExponentialFogColorParameter);
     }
 
     private static float RayOriginTerm(float density, float heightFalloff, float heightOffset)

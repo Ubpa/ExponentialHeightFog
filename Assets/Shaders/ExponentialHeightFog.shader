@@ -50,7 +50,7 @@
             fixed4 frag (v2f IN) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, IN.uv);
-				UBPA_APPLY_FOG(IN.fogCoord, col);
+				UBPA_APPLY_FOG(IN, col);
 				return col;
             }
             ENDCG

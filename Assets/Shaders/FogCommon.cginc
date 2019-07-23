@@ -13,13 +13,13 @@
 
 // unity not support struct
 //struct Fog {
-	// x : FogDensity * exp2(-FogHeightFalloff * (CameraWorldPosition.z - FogHeight))
+	// x : FogDensity * exp2(-FogHeightFalloff * (CameraWorldPosition.y - FogHeight))
 	// y : FogHeightFalloff
 	// [useless] z : CosTerminatorAngle
 	// w : StartDistance
 	float4 ExponentialFogParameters;
 
-	// FogDensitySecond * exp2(-FogHeightFalloffSecond * (CameraWorldPosition.z - FogHeightSecond))
+	// FogDensitySecond * exp2(-FogHeightFalloffSecond * (CameraWorldPosition.y - FogHeightSecond))
 	// FogHeightFalloffSecond
 	// FogDensitySecond
 	// FogHeightSecond
@@ -50,10 +50,10 @@ float Pow2(float x) { return x * x; }
 
 // UE 4.22 HeightFogCommon.ush
 // Calculate the line integral of the ray from the camera to the receiver position through the fog density function
-// The exponential fog density function is d = GlobalDensity * exp(-HeightFalloff * z)
-float CalculateLineIntegralShared(float FogHeightFalloff, float RayDirectionZ, float RayOriginTerms)
+// The exponential fog density function is d = GlobalDensity * exp(-HeightFalloff * y)
+float CalculateLineIntegralShared(float FogHeightFalloff, float RayDirectionY, float RayOriginTerms)
 {
-	float Falloff = max(-127.0f, FogHeightFalloff * RayDirectionZ);    // if it's lower than -127.0, then exp2() goes crazy in OpenGL's GLSL.
+	float Falloff = max(-127.0f, FogHeightFalloff * RayDirectionY);    // if it's lower than -127.0, then exp2() goes crazy in OpenGL's GLSL.
 	float LineIntegral = (1.0f - exp2(-Falloff)) / Falloff;
 	float LineIntegralTaylor = log(2.0) - (0.5 * Pow2(log(2.0))) * Falloff;		// Taylor expansion around 0
 
@@ -73,11 +73,11 @@ half4 GetExponentialHeightFog(float3 WorldPositionRelativeToCamera) // camera to
 	float CameraToReceiverLength = CameraToReceiverLengthSqr * CameraToReceiverLengthInv;
 	half3 CameraToReceiverNormalized = CameraToReceiver * CameraToReceiverLengthInv;
 
-	// FogDensity * exp2(-FogHeightFalloff * (CameraWorldPosition.z - FogHeight))
+	// FogDensity * exp2(-FogHeightFalloff * (CameraWorldPosition.y - FogHeight))
 	float RayOriginTerms = ExponentialFogParameters.x;
 	float RayOriginTermsSecond = ExponentialFogParameters2.x;
 	float RayLength = CameraToReceiverLength;
-	float RayDirectionZ = CameraToReceiver.z;
+	float RayDirectionY = CameraToReceiver.y;
 
 	// Factor in StartDistance
 	// ExponentialFogParameters.w 是 StartDistance
@@ -87,35 +87,35 @@ half4 GetExponentialHeightFog(float3 WorldPositionRelativeToCamera) // camera to
 	{
 		// 到相交点所占时间
 		float ExcludeIntersectionTime = ExcludeDistance * CameraToReceiverLengthInv;
-		// 相机到相交点的 z 偏移
-		float CameraToExclusionIntersectionZ = ExcludeIntersectionTime * CameraToReceiver.z;
-		// 相交点的 z 坐标
-		float ExclusionIntersectionZ = _WorldSpaceCameraPos.z + CameraToExclusionIntersectionZ;
-		// 相交点到着色点的 z 偏移
-		float ExclusionIntersectionToReceiverZ = CameraToReceiver.z - CameraToExclusionIntersectionZ;
+		// 相机到相交点的 y 偏移
+		float CameraToExclusionIntersectionY = ExcludeIntersectionTime * CameraToReceiver.y;
+		// 相交点的 y 坐标
+		float ExclusionIntersectionY = _WorldSpaceCameraPos.y + CameraToExclusionIntersectionY;
+		// 相交点到着色点的 y 偏移
+		float ExclusionIntersectionToReceiverY = CameraToReceiver.y - CameraToExclusionIntersectionY;
 
 		// Calculate fog off of the ray starting from the exclusion distance, instead of starting from the camera
 		// 相交点到着色点的距离
 		RayLength = (1.0f - ExcludeIntersectionTime) * CameraToReceiverLength;
-		// 相交点到着色点的 z 偏移
-		RayDirectionZ = ExclusionIntersectionToReceiverZ;
+		// 相交点到着色点的 y 偏移
+		RayDirectionY = ExclusionIntersectionToReceiverY;
 		// ExponentialFogParameters.y : height falloff
 		// ExponentialFogParameters3.y ： fog height
 		// height falloff * height
-		float Exponent = max(-127.0f, ExponentialFogParameters.y * (ExclusionIntersectionZ - ExponentialFogParameters3.y));
+		float Exponent = max(-127.0f, ExponentialFogParameters.y * (ExclusionIntersectionY - ExponentialFogParameters3.y));
 		// ExponentialFogParameters3.x : fog density
 		RayOriginTerms = ExponentialFogParameters3.x * exp2(-Exponent);
 
 		// ExponentialFogParameters2.y : FogHeightFalloffSecond
 		// ExponentialFogParameters2.w : fog height second
-		float ExponentSecond = max(-127.0f, ExponentialFogParameters2.y * (ExclusionIntersectionZ - ExponentialFogParameters2.w));
+		float ExponentSecond = max(-127.0f, ExponentialFogParameters2.y * (ExclusionIntersectionY - ExponentialFogParameters2.w));
 		RayOriginTermsSecond = ExponentialFogParameters2.z * exp2(-ExponentSecond);
 	}
 
 	// Calculate the "shared" line integral (this term is also used for the directional light inscattering) by adding the two line integrals together (from two different height falloffs and densities)
 	// ExponentialFogParameters.y : fog height falloff
-	float ExponentialHeightLineIntegralShared = CalculateLineIntegralShared(ExponentialFogParameters.y, RayDirectionZ, RayOriginTerms)
-		+ CalculateLineIntegralShared(ExponentialFogParameters2.y, RayDirectionZ, RayOriginTermsSecond);
+	float ExponentialHeightLineIntegralShared = CalculateLineIntegralShared(ExponentialFogParameters.y, RayDirectionY, RayOriginTerms)
+		+ CalculateLineIntegralShared(ExponentialFogParameters2.y, RayDirectionY, RayOriginTermsSecond);
 	// fog amount，最终的积分值
 	float ExponentialHeightLineIntegral = ExponentialHeightLineIntegralShared * RayLength;
 

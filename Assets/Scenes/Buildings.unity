@@ -576,6 +576,11 @@ PrefabInstance:
       propertyPath: fogDensity2
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8748892478792770955, guid: e56da575cce9adb4cab9ae0114bcc2b4,
+        type: 3}
+      propertyPath: directionalInscatteringIntensity
+      value: 2.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e56da575cce9adb4cab9ae0114bcc2b4, type: 3}
 --- !u!1 &1770254720
